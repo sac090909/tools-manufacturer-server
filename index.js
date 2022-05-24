@@ -28,6 +28,9 @@ async function run() {
     const reviewCollection = client
       .db("tools_manufacturer")
       .collection("review");
+    const profileCollection = client
+      .db("tools_manufacturer")
+      .collection("myProfile");
 
     //get all tools
     app.get("/tools", async (req, res) => {
@@ -79,19 +82,25 @@ async function run() {
       const result = await purchaseCollection.insertOne(toolPurchased);
       res.send(result);
     });
-
     //post review
     app.post("/reviews", async (req, res) => {
       const review = req.body;
       const result = await reviewCollection.insertOne(review);
       res.send(result);
     });
-
     //get reviews
     app.get("/reviews", async (req, res) => {
       const query = {};
       const reviews = await reviewCollection.find(query).toArray();
       res.send(reviews);
+    });
+    //get my profile
+    app.get("/myprofile/:email", async (req, res) => {
+      const email = req.params.email;
+      console.log(email);
+      const query = { email: email };
+      const profile = await profileCollection.findOne(query);
+      res.send(profile);
     });
 
     //get my orders
