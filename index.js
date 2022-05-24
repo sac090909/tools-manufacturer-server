@@ -25,8 +25,11 @@ async function run() {
     const purchaseCollection = client
       .db("tools_manufacturer")
       .collection("purchase");
+    const reviewCollection = client
+      .db("tools_manufacturer")
+      .collection("review");
 
-    //get tools
+    //get all tools
     app.get("/tools", async (req, res) => {
       const query = {};
       const tools = await toolsCollection.find(query).toArray();
@@ -66,7 +69,6 @@ async function run() {
     //get one tool
     app.get("/tools/:toolsId", async (req, res) => {
       const id = req.params.toolsId;
-      console.log(id);
       const query = { _id: ObjectId(id) };
       const tool = await toolsCollection.findOne(query);
       res.send(tool);
@@ -75,6 +77,36 @@ async function run() {
     app.post("/purchase", async (req, res) => {
       const toolPurchased = req.body;
       const result = await purchaseCollection.insertOne(toolPurchased);
+      res.send(result);
+    });
+
+    //post review
+    app.post("/reviews", async (req, res) => {
+      const review = req.body;
+      const result = await reviewCollection.insertOne(review);
+      res.send(result);
+    });
+
+    //get reviews
+    app.get("/reviews", async (req, res) => {
+      const query = {};
+      const reviews = await reviewCollection.find(query).toArray();
+      res.send(reviews);
+    });
+
+    //get my orders
+    app.get("/purchase", async (req, res) => {
+      const email = req.query.user;
+      const query = { email: email };
+      const orders = await purchaseCollection.find(query).toArray();
+      res.send(orders);
+    });
+    //delete order
+    app.delete("/purchase/:orderId", async (req, res) => {
+      const orderId = req.params.orderId;
+      console.log(orderId);
+      const query = { _id: ObjectId(orderId) };
+      const result = await purchaseCollection.deleteOne(query);
       res.send(result);
     });
   } finally {
@@ -86,5 +118,5 @@ run().catch(console.dir);
 app.get("/", (req, res) => res.send("Creative Tools Manufacturer"));
 
 app.listen(port, () => {
-  console.log(`Doctors App listening on port ${port}`);
+  console.log(`Tools Manufacturer App listening on port ${port}`);
 });
