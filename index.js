@@ -1,8 +1,8 @@
 const express = require("express");
 const cors = require("cors");
-// const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
+const jwt = require("jsonwebtoken");
 
 const app = express();
 const port = process.env.PORT || 5001;
@@ -31,6 +31,8 @@ async function run() {
     const profileCollection = client
       .db("tools_manufacturer")
       .collection("myProfile");
+
+    const userCollection = client.db("tools_manufacturer").collection("users");
 
     //get all tools
     app.get("/tools", async (req, res) => {
@@ -70,8 +72,16 @@ async function run() {
     // });
 
     //get one tool
+    // app.get("/tools/:toolsId", async (req, res) => {
+    //   const id = req.params.toolsId;
+    //   const query = { _id: ObjectId(id) };
+    //   const tool = await toolsCollection.findOne(query);
+    //   res.send(tool);
+    // });
+
     app.get("/tools/:toolsId", async (req, res) => {
       const id = req.params.toolsId;
+      console.log(id);
       const query = { _id: ObjectId(id) };
       const tool = await toolsCollection.findOne(query);
       res.send(tool);
@@ -95,13 +105,34 @@ async function run() {
       res.send(reviews);
     });
     //get my profile
-    app.get("/myprofile/:email", async (req, res) => {
+    // app.get("/myprofile/:email", async (req, res) => {
+    //   const email = req.params.email;
+    //   console.log(email);
+    //   const query = { email: email };
+    //   const profile = await profileCollection.findOne(query);
+    //   res.send(profile);
+    // });
+
+    app.get("/user/:email", async (req, res) => {
       const email = req.params.email;
-      console.log(email);
       const query = { email: email };
-      const profile = await profileCollection.findOne(query);
+      const profile = await userCollection.findOne(query);
       res.send(profile);
     });
+    //put update profile
+    // app.put("/user/:email", async (req, res) => {
+    //   const email = req.params.email;
+    //   console.log(email);
+    //   const user = req.body;
+    //   console.log(user);
+    //   const filter = { email: email };
+    //   const options = { upsert: true };
+    //   const updateDoc = {
+    //     $set: { ...user },
+    //   };
+    //   const result = await userCollection.updateOne(filter, updateDoc, options);
+    //   res.send({ result: result, success: true });
+    // });
 
     //get my orders
     app.get("/purchase", async (req, res) => {
@@ -117,6 +148,24 @@ async function run() {
       const query = { _id: ObjectId(orderId) };
       const result = await purchaseCollection.deleteOne(query);
       res.send(result);
+    });
+    // put user with JWT
+    app.put("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: user,
+      };
+      const result = await userCollection.updateOne(filter, updateDoc, options);
+      const token = jwt.sign(
+        { email: email },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "24h" }
+      );
+      console.log(token);
+      res.send({ result, token });
     });
   } finally {
   }
