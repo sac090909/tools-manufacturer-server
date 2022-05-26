@@ -31,6 +31,9 @@ async function run() {
     const profileCollection = client
       .db("tools_manufacturer")
       .collection("myProfile");
+    const contactusCollection = client
+      .db("tools_manufacturer")
+      .collection("contactus");
 
     const userCollection = client.db("tools_manufacturer").collection("users");
 
@@ -113,6 +116,13 @@ async function run() {
     //   res.send(profile);
     // });
 
+    //post contact us
+    app.post("/contactus", async (req, res) => {
+      const contactus = req.body;
+      const result = await contactusCollection.insertOne(contactus);
+      res.send(result);
+    });
+    //get user for profile
     app.get("/user/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
